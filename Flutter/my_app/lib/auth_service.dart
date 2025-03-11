@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 class AuthService {
   final String baseUrl = "http://192.168.100.44:8000/detection"; // Replace with your backend IP & port
 
-  /// Sign In Method
   Future<Map<String, dynamic>> signIn(String email, String password) async {
-    final String apiUrl = "$baseUrl/login/"; // Backend API endpoint
+    final String apiUrl = "$baseUrl/login/";
+    print('Requesting URL: $apiUrl'); // Debug URL
 
     try {
       final response = await http.post(
@@ -15,25 +15,49 @@ class AuthService {
         body: jsonEncode({"email": email, "password": password}),
       );
 
+      // Validate response body before decoding
+      if (response.body.isEmpty) {
+        return {'success': false, 'message': 'Empty response from server'};
+      }
+
       final Map<String, dynamic> responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
+        // Ensure all fields are strings or provide defaults
+        final message = responseData['message']?.toString() ?? 'Login successful!';
+        final username = responseData['username']?.toString() ?? '';
+        final email = responseData['email']?.toString() ?? '';
+
         return {
           'success': true,
-          'message': responseData['message'] ?? 'Login successful!',
-          'data': responseData,
+          'message': message,
+          'data': {'username': username, 'email': email},
+        };
+      } else if (response.statusCode == 400) {
+        return {
+          'success': false,
+          'message': responseData['message']?.toString() ?? 'Invalid email or password',
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': false,
+          'message': responseData['message']?.toString() ?? 'User not found',
         };
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Login failed',
+          'message': 'Login failed with status ${response.statusCode}: ${responseData['message']?.toString() ?? 'Unknown error'}',
         };
       }
     } catch (e) {
-      return {'success': false, 'message': 'Error: $e'};
+      return {
+        'success': false,
+        'message': e.toString().contains('SocketException')
+            ? 'Network error: Check your connection'
+            : 'An unexpected error occurred: $e',
+      };
     }
   }
-
   /// Sign Up Method
   Future<Map<String, dynamic>> signUp(String name, String email, String password) async {
     final String apiUrl = "$baseUrl/signup/";  // Add a trailing slash// Backend API endpoint

@@ -31,16 +31,19 @@ class _SignInScreenState extends State<SignInScreen> {
     });
 
     if (result['success']) {
+      final username = result['data']['username']?.toString() ?? 'Unknown User';
+      final email = result['data']['email']?.toString() ?? 'No Email';
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ProfileScreen(
-            username: result['data']['name'],
-            email: result['data']['email'],
+            username: username,
+            email: email,
           ),
         ),
       );
-    } else {
+    }
+    else {
       _showErrorDialog(result['error'] ?? "Login failed");
     }
   }
