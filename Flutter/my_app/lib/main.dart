@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/Screens/FeedbackPage.dart';
+import 'package:my_app/Screens/home_screen.dart';
 import 'package:my_app/Screens/sign_in_screen.dart';
 import 'package:my_app/Screens/sign_up_screen.dart';
 import 'package:my_app/Screens/ProfileScreen.dart';
 import 'package:my_app/Screens/UploadImageScreen.dart';
 import 'package:my_app/Screens/DetectionHistory.dart';
 import 'package:my_app/Screens/HelpSupportPage.dart';
+import 'package:my_app/Screens/EditProfileScreen.dart';
+
 
 void main() {
   runApp(SafeEatsApp());
@@ -29,6 +32,23 @@ class SafeEatsApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => const SignUpScreen(),
             );
+
+          case '/home':
+            if (settings.arguments != null) {
+              final args = settings.arguments as Map<String, String>;
+              return MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                  username: args['username']!,
+                  email: args['email']!,
+                ),
+              );
+            }
+            return MaterialPageRoute(
+              builder: (context) => const Scaffold(
+                body: Center(child: Text("Invalid arguments for HomeScreen")),
+              ),
+            );
+
           case '/profile':
             if (settings.arguments != null) {
               final args = settings.arguments as Map<String, String>;
@@ -44,6 +64,23 @@ class SafeEatsApp extends StatelessWidget {
                 body: Center(child: Text("Invalid arguments for ProfileScreen")),
               ),
             );
+          case '/editProfile':
+            if (settings.arguments != null) {
+              final args = settings.arguments as Map<String, String>;
+              return MaterialPageRoute(
+                builder: (context) => EditProfileScreen(
+                  currentName: args['currentName']!,
+                  currentEmail: args['currentEmail']!,
+                  currentAllergies: args['currentAllergies']!,
+                ),
+              );
+            }
+            return MaterialPageRoute(
+              builder: (context) => const Scaffold(
+                body: Center(child: Text("Invalid arguments for EditProfileScreen")),
+              ),
+            );
+
           case '/uploadImage':
             return MaterialPageRoute(
               builder: (context) => UploadImageScreen(),
@@ -52,11 +89,11 @@ class SafeEatsApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => const DetectionHistory(),
             );
-          case '/feedback': // Add Feedback page route
+          case '/feedback':
             return MaterialPageRoute(
               builder: (context) => const FeedbackPage(),
             );
-          case '/helpSupport': // Add Help & Support page route
+          case '/helpSupport':
             return MaterialPageRoute(
               builder: (context) => const HelpSupportPage(),
             );

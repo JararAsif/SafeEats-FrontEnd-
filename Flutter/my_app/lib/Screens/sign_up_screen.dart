@@ -16,14 +16,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   bool _isLoading = false;
 
-  void _signUp() async {
-    setState(() {
-      _isLoading = true;
-    });
+  // Validation Functions
+  bool _isValidName(String name) {
+    return RegExp(r"^[a-zA-Z\s]+$").hasMatch(name);
+  }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email);
+  }
+
+  bool _isValidPassword(String password) {
+    return password.length >= 8;
+  }
+
+  void _signUp() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+
+    if (!_isValidName(name)) {
+      _showErrorDialog("Name should not contain numbers.");
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showErrorDialog("Please enter a valid email.");
+      return;
+    }
+
+    if (!_isValidPassword(password)) {
+      _showErrorDialog("Password must be at least 8 characters long.");
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final Map<String, dynamic> result = await authService.signUp(name, email, password);
@@ -34,23 +62,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Sign up successful!')),
         );
-        Navigator.pushNamed(context, '/signing'); // Navigate to sign-in page
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Error during sign up')),
-        );
+        Navigator.pushReplacementNamed(context, '/signing'); // Ensure it matches main.dart
+      }
+ else {
+        _showErrorDialog(result['message'] ?? 'Error during sign up');
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      _showErrorDialog('Error: ${e.toString()}');
     } finally {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -102,7 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               controller: _nameController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.person_outline),
-                hintText: 'name',
+                hintText: 'Name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

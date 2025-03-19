@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String baseUrl = "http://192.168.100.44:8000/detection"; // Replace with your backend IP & port
+  final String baseUrl = "http://192.168.100.12:8000/detection"; // Replace with your backend IP & port
 
   Future<Map<String, dynamic>> signIn(String email, String password) async {
     final String apiUrl = "$baseUrl/login/";
@@ -90,4 +90,82 @@ class AuthService {
       return {'success': false, 'message': 'Error: $e'};
     }
   }
+
+  //update profile endpoint
+  Future<Map<String, dynamic>> updateUserProfile({
+    required String email, // Required to identify user
+    String? username,
+    String? newEmail,
+    String? password,
+    List<String>? allergies,
+  }) async {
+    final String apiUrl = "$baseUrl/update_user_profile/";
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email, // Identify the user
+          if (username != null) "username": username,
+          if (newEmail != null) "newEmail": newEmail,
+          if (password != null) "password": password,
+          if (allergies != null) "allergies": allergies,
+        }),
+      );
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Profile updated successfully!',
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Profile update failed',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
+  /// Fetch user profile data from backend
+
+  Future<Map<String, dynamic>> getUserProfile(String userEmail) async {
+    final String apiUrl = "$baseUrl/get-user-profile/";
+
+    try {
+      final http.Response response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": userEmail}),
+      );
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,  // Send decoded response data
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch profile',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
+
+
+
 }
+
+

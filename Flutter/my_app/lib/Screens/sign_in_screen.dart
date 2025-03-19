@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/auth_service.dart';
- // Adjust path as needed
-import 'ProfileScreen.dart';
+import 'package:my_app/auth_service.dart'; // Adjust path as needed
+import 'package:my_app/Screens/home_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -33,17 +32,17 @@ class _SignInScreenState extends State<SignInScreen> {
     if (result['success']) {
       final username = result['data']['username']?.toString() ?? 'Unknown User';
       final email = result['data']['email']?.toString() ?? 'No Email';
-      Navigator.push(
+
+      // Navigate to HomeScreen instead of ProfileScreen
+      Navigator.pushReplacementNamed(
         context,
-        MaterialPageRoute(
-          builder: (context) => ProfileScreen(
-            username: username,
-            email: email,
-          ),
-        ),
+        '/home',
+        arguments: {
+          'username': username,
+          'email': email,
+        },
       );
-    }
-    else {
+    } else {
       _showErrorDialog(result['error'] ?? "Login failed");
     }
   }
